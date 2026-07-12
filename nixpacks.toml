@@ -1,0 +1,8 @@
+[phases.build]
+cmds = ["npx expo export --platform web"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[start]
+cmd = "node server.js"
