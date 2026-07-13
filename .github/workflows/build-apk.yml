@@ -34,8 +34,8 @@ jobs:
         with:
           packages: 'tools platform-tools build-tools;34.0.0 platforms;android-34 ndk;26.1.10909125'
 
-      - name: Install Expo CLI
-        run: npm install -g expo-cli eas-cli
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
 
       - name: Install dependencies
         run: npm ci
@@ -50,7 +50,7 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           NODE_ENV: production
         run: |
-          eas build --platform android --profile production --non-interactive --no-wait || npx expo prebuild --platform android --clean && cd android && ./gradlew assembleRelease
+          eas build --platform android --profile production --non-interactive --no-wait || (./node_modules/.bin/expo prebuild --platform android --clean --non-interactive && cd android && ./gradlew assembleRelease)
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
