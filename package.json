@@ -54,5 +54,8 @@
     "@babel/core": "^7.25.2",
     "@types/react": "~19.1.10",
     "typescript": "~5.9.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
