@@ -1051,8 +1051,8 @@ function loadProducts() {
     if (!productsList.length) html = '<div class="empty-state">No products yet. Add your first product!</div>';
     else {
       productsList.forEach(function(p) {
-        var img = (p.images && p.images[0]) ? '<img class="thumb" src="' + p.images[0].image_url + '" onerror="this.style.display=\'none\'">' : '<div class="thumb"></div>';
-        html += '<tr><td>' + img + '</td><td style="color:#fff;font-weight:500">' + p.name + '</td><td>$' + Number(p.price).toFixed(2) + '</td><td>' + (p.category ? p.category.name : '—') + '</td><td>' + statusBadge(p.status) + '</td><td>' + (p.is_featured ? '<span class="badge badge-yellow">Yes</span>' : '—') + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="editProduct(\'' + p.id + '\')">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteProduct(\'' + p.id + '\')">Delete</button></td></tr>';
+        var img = (p.images && p.images[0]) ? '<img class="thumb" src="' + p.images[0].image_url + '" onerror="this.style.display=\\'none\\'">' : '<div class="thumb"></div>';
+        html += '<tr><td>' + img + '</td><td style="color:#fff;font-weight:500">' + p.name + '</td><td>$' + Number(p.price).toFixed(2) + '</td><td>' + (p.category ? p.category.name : '—') + '</td><td>' + statusBadge(p.status) + '</td><td>' + (p.is_featured ? '<span class="badge badge-yellow">Yes</span>' : '—') + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="editProduct(\\'' + p.id + '\\')">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteProduct(\\'' + p.id + '\\')">Delete</button></td></tr>';
       });
       html += '</tbody></table>';
     }
@@ -1166,7 +1166,7 @@ function loadCategories() {
     else {
       categoriesList.forEach(function(c) {
         var img = c.image_url ? '<img class="thumb" src="' + c.image_url + '">' : '<div class="thumb"></div>';
-        html += '<tr><td>' + img + '</td><td style="color:#fff;font-weight:500">' + c.name + '</td><td style="color:#555">' + c.slug + '</td><td>' + c.sort_order + '</td><td>' + statusBadge(c.is_active ? 'active' : 'draft') + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="editCategory(\'' + c.id + '\')">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteCategory(\'' + c.id + '\')">Delete</button></td></tr>';
+        html += '<tr><td>' + img + '</td><td style="color:#fff;font-weight:500">' + c.name + '</td><td style="color:#555">' + c.slug + '</td><td>' + c.sort_order + '</td><td>' + statusBadge(c.is_active ? 'active' : 'draft') + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="editCategory(\\'' + c.id + '\\')">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteCategory(\\'' + c.id + '\\')">Delete</button></td></tr>';
       });
       html += '</tbody></table>';
     }
@@ -1229,7 +1229,7 @@ function loadOrders() {
     else {
       orders.forEach(function(o) {
         var items = (o.order_items || []).length;
-        html += '<tr><td style="color:#fff;font-weight:600">' + o.order_number + '</td><td>$' + Number(o.total).toFixed(2) + '</td><td>' + statusBadge(o.status) + '</td><td>' + statusBadge(o.payment_status) + '</td><td>' + items + '</td><td style="color:#555">' + new Date(o.created_at).toLocaleDateString() + '</td><td><button class="btn btn-sm btn-ghost" onclick="openOrderModal(\'' + o.id + '\',\'' + o.status + '\',\'' + o.payment_status + '\')">Update</button></td></tr>';
+        html += '<tr><td style="color:#fff;font-weight:600">' + o.order_number + '</td><td>$' + Number(o.total).toFixed(2) + '</td><td>' + statusBadge(o.status) + '</td><td>' + statusBadge(o.payment_status) + '</td><td>' + items + '</td><td style="color:#555">' + new Date(o.created_at).toLocaleDateString() + '</td><td><button class="btn btn-sm btn-ghost" onclick="openOrderModal(\\'' + o.id + '\\',\\'' + o.status + '\\',\\'' + o.payment_status + '\\')">Update</button></td></tr>';
       });
       html += '</tbody></table>';
     }
@@ -1258,7 +1258,7 @@ function loadReels() {
     else {
       reels.forEach(function(r) {
         var thumb = r.thumbnail_url ? '<img class="thumb" src="' + r.thumbnail_url + '">' : '<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:#444;font-size:18px">▶</div>';
-        html += '<tr><td style="color:#fff">' + (r.title || '—') + '</td><td>' + thumb + '</td><td>' + (r.product ? r.product.name : '—') + '</td><td>' + r.likes_count + '</td><td>' + statusBadge(r.is_active ? 'active' : 'draft') + '</td><td>' + r.sort_order + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="toggleReelActive(\'' + r.id + '\',' + (!r.is_active) + ')">' + (r.is_active ? 'Hide' : 'Show') + '</button><button class="btn btn-sm btn-danger" onclick="deleteReel(\'' + r.id + '\')">Delete</button></td></tr>';
+        html += '<tr><td style="color:#fff">' + (r.title || '—') + '</td><td>' + thumb + '</td><td>' + (r.product ? r.product.name : '—') + '</td><td>' + r.likes_count + '</td><td>' + statusBadge(r.is_active ? 'active' : 'draft') + '</td><td>' + r.sort_order + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="toggleReelActive(\\'' + r.id + '\\',' + (!r.is_active) + ')">' + (r.is_active ? 'Hide' : 'Show') + '</button><button class="btn btn-sm btn-danger" onclick="deleteReel(\\'' + r.id + '\\')">Delete</button></td></tr>';
       });
       html += '</tbody></table>';
     }
@@ -1326,7 +1326,7 @@ function loadBanners() {
     else {
       bannersList.forEach(function(b) {
         var img = b.image_url ? '<img class="thumb" src="' + b.image_url + '">' : '<div class="thumb"></div>';
-        html += '<tr><td>' + img + '</td><td style="color:#fff">' + b.title + '</td><td><span class="badge badge-blue">' + b.placement + '</span></td><td>' + b.sort_order + '</td><td>' + statusBadge(b.is_active ? 'active' : 'draft') + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="editBanner(\'' + b.id + '\')">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteBanner(\'' + b.id + '\')">Delete</button></td></tr>';
+        html += '<tr><td>' + img + '</td><td style="color:#fff">' + b.title + '</td><td><span class="badge badge-blue">' + b.placement + '</span></td><td>' + b.sort_order + '</td><td>' + statusBadge(b.is_active ? 'active' : 'draft') + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="editBanner(\\'' + b.id + '\\')">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteBanner(\\'' + b.id + '\\')">Delete</button></td></tr>';
       });
       html += '</tbody></table>';
     }
@@ -1394,7 +1394,7 @@ function loadCoupons() {
     if (!couponsList.length) html = '<div class="empty-state">No coupons yet.</div>';
     else {
       couponsList.forEach(function(c) {
-        html += '<tr><td style="color:#fff;font-weight:600;font-family:monospace">' + c.code + '</td><td>' + c.discount_type + '</td><td>' + (c.discount_type === 'percentage' ? c.discount_value + '%' : '$' + c.discount_value) + '</td><td>' + c.used_count + '</td><td>' + (c.max_uses || '∞') + '</td><td>' + statusBadge(c.is_active ? 'active' : 'draft') + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="editCoupon(\'' + c.id + '\')">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteCoupon(\'' + c.id + '\')">Delete</button></td></tr>';
+        html += '<tr><td style="color:#fff;font-weight:600;font-family:monospace">' + c.code + '</td><td>' + c.discount_type + '</td><td>' + (c.discount_type === 'percentage' ? c.discount_value + '%' : '$' + c.discount_value) + '</td><td>' + c.used_count + '</td><td>' + (c.max_uses || '∞') + '</td><td>' + statusBadge(c.is_active ? 'active' : 'draft') + '</td><td class="actions"><button class="btn btn-sm btn-ghost" onclick="editCoupon(\\'' + c.id + '\\')">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteCoupon(\\'' + c.id + '\\')">Delete</button></td></tr>';
       });
       html += '</tbody></table>';
     }
