@@ -34,11 +34,20 @@ jobs:
         with:
           packages: 'tools platform-tools build-tools;34.0.0 platforms;android-34 ndk;26.1.10909125'
 
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          for attempt in 1 2 3; do
+            npm ci && break
+            echo "npm ci failed (attempt $attempt), retrying..."
+            sleep 5
+          done
+          test -x node_modules/.bin/expo
 
       - name: Create .env file
         run: |
