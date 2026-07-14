@@ -24,6 +24,7 @@ import {
   Shield,
   Ruler,
   ChevronRight,
+  Link2,
 } from 'lucide-react-native';
 import { colors, spacing, radius, typography, shadows } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
@@ -33,13 +34,13 @@ import { useWishlist } from '@/lib/WishlistContext';
 import { Button } from '@/components/Button';
 import { LoadingState } from '@/components/LoadingState';
 import { ProductCard } from '@/components/ProductCard';
-import type { Product, ProductVariant, Review } from '@/lib/supabase';
+import type { Product, ProductVariant, Review, AffiliateLink } from '@/lib/supabase';
 
 const { width } = Dimensions.get('window');
 
 export default function ProductDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const { user } = useAuth();
+  const { user, profile, isPublisher } = useAuth();
   const { addToCart } = useCart();
   const { isWishlisted, toggle } = useWishlist();
   const [product, setProduct] = useState<Product | null>(null);
@@ -51,6 +52,8 @@ export default function ProductDetailScreen() {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [affiliateLink, setAffiliateLink] = useState<AffiliateLink | null>(null);
+  const [showAffiliateModal, setShowAffiliateModal] = useState(false);
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -82,6 +85,17 @@ export default function ProductDetailScreen() {
     setVariants((variantsRes.data as ProductVariant[]) ?? []);
     setReviews((reviewsRes.data as Review[]) ?? []);
     setRelated((relatedRes.data as Product[]) ?? []);
+
+    // Load affiliate link for publishers
+    if (user && profile?.role === 'publisher') {
+      const { data: affData } = await supabase
+        .from('affiliate_links')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('product_id', p.id)
+        .maybeSingle();
+      setAffiliateLink(affData as AffiliateLink | null);
+    }
 
     const sizes = Array.from(new Set((variantsRes.data as ProductVariant[])?.map(v => v.size) ?? []));
     const colorOpts = Array.from(new Set((variantsRes.data as ProductVariant[])?.map(v => v.color) ?? []));
@@ -374,6 +388,67 @@ export default function ProductDetailScreen() {
               ))}
             </View>
           ) : null}
+          {isPublisher && product && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Affiliate Program</Text>
+              <View style={styles.affiliateCard}>
+                <View style={styles.affiliateHeader}>
+                  <View style={styles.affiliateIcon}>
+                    <Link2 size={20} color={colors.white} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.affiliateTitle}>Earn 10% Commission</Text>
+                    <Text style={styles.affiliateDesc}>Share your link and earn from every sale</Text>
+                  </View>
+                </View>
+                {affiliateLink ? (
+                  <View>
+                    <Text style={styles.affiliateUrlLabel}>Your Affiliate Link</Text>
+                    <Text style={styles.affiliateUrl} selectable>
+                      {process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/affiliate-redirect?code={affiliateLink.affiliate_code}
+                    </Text>
+                    <View style={styles.affiliateStats}>
+                      <View style={styles.affiliateStat}>
+                        <Text style={styles.affiliateStatValue}>{affiliateLink.clicks_count}</Text>
+                        <Text style={styles.affiliateStatLabel}>Clicks</Text>
+                      </View>
+                      <View style={styles.affiliateStat}>
+                        <Text style={styles.affiliateStatValue}>{affiliateLink.purchases_count}</Text>
+                        <Text style={styles.affiliateStatLabel}>Sales</Text>
+                      </View>
+                      <View style={styles.affiliateStat}>
+                        <Text style={styles.affiliateStatValue}>${affiliateLink.total_earnings.toFixed(2)}</Text>
+                        <Text style={styles.affiliateStatLabel}>Earned</Text>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <Button
+                    title="Generate Affiliate Link"
+                    onPress={async () => {
+                      if (!user) return;
+                      const code = `AFF-${user.id.slice(0, 8)}-${Date.now().toString(36)}`;
+                      const { data, error } = await supabase
+                        .from('affiliate_links')
+                        .insert({
+                          user_id: user.id,
+                          product_id: product.id,
+                          affiliate_code: code,
+                        })
+                        .select()
+                        .single();
+                      if (!error && data) {
+                        setAffiliateLink(data as AffiliateLink);
+                      }
+                    }}
+                    size="sm"
+                    fullWidth
+                  />
+                )}
+              </View>
+            </View>
+          )}
+
           {related.length > 0 ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>You May Also Like</Text>
@@ -679,5 +754,69 @@ const styles = StyleSheet.create({
   notFound: {
     ...typography.h4,
     color: colors.text,
+  },
+  affiliateCard: {
+    backgroundColor: colors.primary[50],
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  affiliateHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  affiliateIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary[600],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  affiliateTitle: {
+    ...typography.bodySmall,
+    fontWeight: '700',
+    color: colors.primary[700],
+  },
+  affiliateDesc: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  affiliateUrlLabel: {
+    ...typography.caption,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  affiliateUrl: {
+    ...typography.caption,
+    color: colors.primary[600],
+    backgroundColor: colors.surface,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  affiliateStats: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
+  affiliateStat: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.sm,
+  },
+  affiliateStatValue: {
+    ...typography.h4,
+    color: colors.primary[700],
+    fontWeight: '700',
+  },
+  affiliateStatLabel: {
+    ...typography.caption,
+    color: colors.textMuted,
   },
 });

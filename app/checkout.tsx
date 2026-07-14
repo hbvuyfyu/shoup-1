@@ -111,6 +111,9 @@ export default function CheckoutScreen() {
       const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
       if (itemsError) throw itemsError;
 
+      // Process merchant and affiliate earnings (75% to merchant, 10% to affiliate, 10-day hold)
+      await supabase.rpc('process_order_merchant_earnings', { p_order_id: order.id });
+
       await supabase.from('notifications').insert({
         user_id: user.id,
         type: 'order_placed',

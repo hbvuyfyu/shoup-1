@@ -15,12 +15,20 @@ import {
   Tag,
   Shield,
   Moon,
+  Store,
+  Megaphone,
+  Wallet,
+  ShoppingBag,
+  Film,
+  Link2,
+  Users,
+  Banknote,
 } from 'lucide-react-native';
 import { colors, spacing, radius, typography, shadows } from '@/lib/theme';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function AccountScreen() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isAdmin, isMerchant, isPublisher } = useAuth();
 
   if (!user) {
     return (
@@ -43,7 +51,11 @@ export default function AccountScreen() {
     );
   }
 
-  const menuItems = [
+  const roleLabel = profile?.role
+    ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1)
+    : 'Customer';
+
+  const customerItems = [
     { icon: Package, label: 'My Orders', action: () => router.push('/orders') },
     { icon: Heart, label: 'Wishlist', action: () => router.push('/(tabs)/wishlist') },
     { icon: MapPin, label: 'Addresses', action: () => router.push('/addresses') },
@@ -55,6 +67,34 @@ export default function AccountScreen() {
     { icon: Shield, label: 'Privacy & Security', action: () => {} },
     { icon: Settings, label: 'Settings', action: () => {} },
     { icon: HelpCircle, label: 'Help & Support', action: () => router.push('/support') },
+  ];
+
+  const merchantItems = [
+    { icon: Store, label: 'Merchant Dashboard', action: () => router.push('/merchant') },
+    { icon: ShoppingBag, label: 'My Products', action: () => router.push('/merchant/products') },
+    { icon: Film, label: 'My Reels', action: () => router.push('/merchant/reels') },
+    { icon: Package, label: 'Orders', action: () => router.push('/merchant/orders') },
+    { icon: Wallet, label: 'Wallet & Earnings', action: () => router.push('/merchant/wallet') },
+    { icon: Banknote, label: 'Withdrawals', action: () => router.push('/merchant/withdrawals') },
+  ];
+
+  const publisherItems = [
+    { icon: Megaphone, label: 'Publisher Dashboard', action: () => router.push('/publisher') },
+    { icon: Link2, label: 'Affiliate Links', action: () => router.push('/publisher/links') },
+    { icon: Wallet, label: 'Wallet & Earnings', action: () => router.push('/publisher/wallet') },
+    { icon: Banknote, label: 'Withdrawals', action: () => router.push('/publisher/withdrawals') },
+  ];
+
+  const adminItems = [
+    { icon: Shield, label: 'Admin Dashboard', action: () => router.push('/admin') },
+    { icon: Users, label: 'Manage Users', action: () => router.push('/admin/users') },
+    { icon: Banknote, label: 'Withdrawal Requests', action: () => router.push('/admin/withdrawals') },
+  ];
+
+  const dashboards = [
+    ...(isAdmin ? adminItems : []),
+    ...(isMerchant ? merchantItems : []),
+    ...(isPublisher ? publisherItems : []),
   ];
 
   return (
@@ -78,14 +118,44 @@ export default function AccountScreen() {
             <Text style={styles.profileName}>{profile?.full_name ?? 'User'}</Text>
             <Text style={styles.profileEmail}>{user.email}</Text>
             {profile?.phone ? <Text style={styles.profilePhone}>{profile.phone}</Text> : null}
+            <View style={styles.roleBadge}>
+              <Text style={styles.roleBadgeText}>{roleLabel}</Text>
+            </View>
           </View>
         </View>
+
+        {dashboards.length > 0 && (
+          <View style={styles.menuContainer}>
+            <Text style={styles.sectionTitle}>Dashboard</Text>
+            {dashboards.map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <TouchableOpacity
+                  key={`dash-${i}`}
+                  style={styles.menuItem}
+                  onPress={item.action}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuLeft}>
+                    <View style={[styles.menuIcon, { backgroundColor: colors.primary[50] }]}>
+                      <Icon size={20} color={colors.primary[600]} />
+                    </View>
+                    <Text style={styles.menuLabel}>{item.label}</Text>
+                  </View>
+                  <ChevronRight size={20} color={colors.neutral[400]} />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
         <View style={styles.menuContainer}>
-          {menuItems.map((item, i) => {
+          <Text style={styles.sectionTitle}>Account</Text>
+          {customerItems.map((item, i) => {
             const Icon = item.icon;
             return (
               <TouchableOpacity
-                key={i}
+                key={`cust-${i}`}
                 style={styles.menuItem}
                 onPress={item.action}
                 activeOpacity={0.7}
@@ -209,12 +279,35 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textMuted,
   },
+  roleBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary[100],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+    marginTop: 4,
+  },
+  roleBadgeText: {
+    ...typography.caption,
+    color: colors.primary[700],
+    fontWeight: '700',
+  },
+  sectionTitle: {
+    ...typography.bodySmall,
+    fontWeight: '700',
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+    marginHorizontal: spacing.sm,
+  },
   menuContainer: {
     margin: spacing.md,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     overflow: 'hidden',
     ...shadows.sm,
+    padding: spacing.sm,
   },
   menuItem: {
     flexDirection: 'row',

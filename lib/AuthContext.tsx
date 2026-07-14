@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from './supabase';
 import type { Session, User } from '@supabase/supabase-js';
-import { Profile } from './supabase';
+import { Profile, UserRole } from './supabase';
 
 type AuthContextType = {
   session: Session | null;
@@ -9,9 +9,12 @@ type AuthContextType = {
   profile: Profile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, fullName: string, role?: UserRole) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  isAdmin: boolean;
+  isMerchant: boolean;
+  isPublisher: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,18 +68,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, role: UserRole = 'customer') => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { data: { full_name: fullName, role } },
     });
     if (error) return { error: error.message };
     if (data.user) {
-      await supabase.from('profiles').insert({
+      await supabase.from('profiles').upsert({
         id: data.user.id,
         full_name: fullName,
+        role,
       });
+      if (role === 'publisher' || role === 'merchant') {
+        await supabase.from('wallets').upsert({
+          user_id: data.user.id,
+        }).eq('user_id', data.user.id);
+      }
     }
     return { error: null };
   };
@@ -92,9 +101,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await fetchProfile(user.id);
   };
 
+  const isAdmin = profile?.role === 'admin';
+  const isMerchant = profile?.role === 'merchant';
+  const isPublisher = profile?.role === 'publisher';
+
   return (
     <AuthContext.Provider
-      value={{ session, user, profile, loading, signIn, signUp, signOut, refreshProfile }}
+      value={{ session, user, profile, loading, signIn, signUp, signOut, refreshProfile, isAdmin, isMerchant, isPublisher }}
     >
       {children}
     </AuthContext.Provider>

@@ -28,6 +28,7 @@ export type Product = {
   is_new: boolean;
   rating: number;
   review_count: number;
+  merchant_id: string | null;
   created_at: string;
   category?: Category;
   images?: ProductImage[];
@@ -193,6 +194,8 @@ export type SupportTicket = {
   created_at: string;
 };
 
+export type UserRole = 'customer' | 'publisher' | 'merchant' | 'admin';
+
 export type Profile = {
   id: string;
   full_name: string | null;
@@ -200,6 +203,82 @@ export type Profile = {
   avatar_url: string | null;
   default_currency: string;
   default_language: string;
+  role: UserRole;
+  is_banned: boolean;
+  is_active: boolean;
+  admin_notes: string | null;
+};
+
+export type Wallet = {
+  id: string;
+  user_id: string;
+  available_balance: number;
+  pending_balance: number;
+  total_earned: number;
+  total_withdrawn: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type WalletTransaction = {
+  id: string;
+  wallet_id: string;
+  user_id: string;
+  type: 'credit' | 'debit' | 'pending_credit' | 'pending_release' | 'withdrawal' | 'adjustment';
+  amount: number;
+  description: string | null;
+  order_id: string | null;
+  order_item_id: string | null;
+  withdrawal_id: string | null;
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  created_at: string;
+};
+
+export type WithdrawalRequest = {
+  id: string;
+  user_id: string;
+  amount: number;
+  payment_info: string;
+  status: 'pending' | 'approved' | 'rejected' | 'paid' | 'cancelled';
+  admin_notes: string | null;
+  invoice_number: string | null;
+  processed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AffiliateLink = {
+  id: string;
+  user_id: string;
+  product_id: string;
+  affiliate_code: string;
+  clicks_count: number;
+  purchases_count: number;
+  total_earnings: number;
+  is_active: boolean;
+  created_at: string;
+  product?: Product;
+};
+
+export type AffiliateClick = {
+  id: string;
+  affiliate_link_id: string;
+  product_id: string;
+  user_id: string | null;
+  ip_address: string | null;
+  created_at: string;
+};
+
+export type MerchantRestriction = {
+  id: string;
+  merchant_id: string;
+  can_upload_products: boolean;
+  can_upload_reels: boolean;
+  can_edit_products: boolean;
+  can_delete_products: boolean;
+  restricted_notes: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Reel = {
@@ -213,6 +292,7 @@ export type Reel = {
   comments_count: number;
   is_active: boolean;
   sort_order: number;
+  merchant_id: string | null;
   created_at: string;
   product?: Product;
 };
